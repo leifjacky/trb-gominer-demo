@@ -60,13 +60,13 @@ We assume the length of nonce is 16 bytes. The miner will pick nonce2 such that 
 
 ### mining.set_difficulty
 
-- params: [diff]
+- params: ["job difficulty"]
 
 ```json
 {
 	"id": null,
 	"method": "mining.set_difficulty",
-	"params": [""]		// job difficulty must be integer in hex string, in case of overflow
+	"params": ["abc123"]		// job difficulty must be integer in hex string, in case of overflow
 }
 ```
 
