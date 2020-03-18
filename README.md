@@ -5,8 +5,8 @@ For tests only.
 ### usage
 
 ```bash
-go get -v github.com/leifjacky/ckb-gominer-demo
-cd $GOPATH/src/github.com/leifjacky/ckb-gominer-demo
+go get -v github.com/leifjacky/trb-gominer-demo
+cd $GOPATH/src/github.com/leifjacky/trb-gominer-demo
 go run *.go
 ```
 
