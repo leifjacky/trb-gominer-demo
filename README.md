@@ -50,7 +50,7 @@ We assume the length of nonce is 16 bytes. The miner will pick nonce2 such that 
 {
 	"id": 2,
 	"method": "mining.authorize",
-	"params": ["TRB1qyq2znu0gempdahctxsm49sa9jdzq9vnka7qt9ntff.worker1", "x"]
+	"params": ["0x810a4813068dc8571510071268d90a3d9108a298.worker1", "x"]
 }
 
 {"id":2,"result":true,"error":null}
@@ -99,7 +99,7 @@ We assume the length of nonce is 16 bytes. The miner will pick nonce2 such that 
 {
 	"id": 102,
 	"method": "mining.submit",
-	"params": ["TRB1qyq2znu0gempdahctxsm49sa9jdzq9vnka7qt9ntff.worker1", "1611", "000000000000000000114026"]
+	"params": ["0x810a4813068dc8571510071268d90a3d9108a298.worker1", "1611", "000000000000000000114026"]
 }
 
 {"id":102,"result":true,"error":null}    // accepted share response
