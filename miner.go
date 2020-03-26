@@ -70,7 +70,7 @@ func (j *Job) GetNextNonce(size int) string {
 			}
 		}
 		if valid {
-			n := FillZeroHashLen(j.nonce.Text(10), size*2)
+			n := FillZeroHashLen(j.nonce.Text(16), size*2)
 			return n
 		}
 	}
