@@ -1,6 +1,6 @@
 ## Tellor(TRB) stratum cpuminer written in golang 
 
-###  2019-03-26 IMPORTANT UPDATE !
+###  2019-03-26 UPDATE !
 
 #### To make sure nonce can be successfully packed into a utf8 string in solidity, each byte of nonce must be <= 0x7f.
 
