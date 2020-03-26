@@ -1,5 +1,17 @@
 ## Tellor(TRB) stratum cpuminer written in golang 
 
+###  2019-03-26 IMPORTANT UPDATE !
+
+#### To make sure nonce can be successfully packed into a utf8 string in solidity, each byte of nonce must be <= 0x7f.
+
+>For example
+>
+>valid: "000000000000000017582701", "3030313b3e3d303f35393531", "6b436a3d3030323158681a22", "7f7f7f7f3031323300000000"
+>
+>invalid: "ffffffffffffffff17582701", "8080818b8e8d808f85898581"
+
+
+
 For tests only.
 
 ### usage
@@ -30,7 +42,7 @@ request:
 response:
 {
 	"id": 1,
-	"result": [null, "cebdeb6e", 12],
+	"result": [null, "53252c19", 12],
 	"error": null
 }
 ```
@@ -66,7 +78,7 @@ We assume the length of nonce is 16 bytes. The miner will pick nonce2 such that 
 {
 	"id": null,
 	"method": "mining.set_difficulty",
-	"params": ["abc123"]		// job difficulty must be integer in hex string, in case of overflow
+	"params": ["123abc"]		// job difficulty must be integer in hex string, in case of overflow
 }
 ```
 
@@ -80,7 +92,7 @@ We assume the length of nonce is 16 bytes. The miner will pick nonce2 such that 
 {
 	"id": null,
 	"method": "mining.notify",
-	"params": ["1611", "85666ab512fdf4232063b485ffdb74d032f5c21bcc612b22039af01c805077b2", "7f97009879cbbbcbd6ca0ced94644d25be4bef15", "2f9da8e112a63", true]
+	"params": ["84557030","93a16ac3eaa54c323dbeccf7c7a9a061daa4d1a3c9b4d8f7fccdffbbbc97ea64","7f97009879cbbbcbd6ca0ced94644d25be4bef15","46720b08e8d81",true]
 }
 ```
 
@@ -99,7 +111,7 @@ We assume the length of nonce is 16 bytes. The miner will pick nonce2 such that 
 {
 	"id": 102,
 	"method": "mining.submit",
-	"params": ["0x810a4813068dc8571510071268d90a3d9108a298.worker1", "1611", "000000000000000000114026"]
+	"params": ["0x810a4813068dc8571510071268d90a3d9108a298.worker1","84557030","000000000000000017582701"]
 }
 
 {"id":102,"result":true,"error":null}    // accepted share response
@@ -109,6 +121,8 @@ We assume the length of nonce is 16 bytes. The miner will pick nonce2 such that 
 > nonce2 is the second part of the nonce. 
 >
 > miner submits only when remainder of solution is equal or smaller than (blockDiff / jobDiff). See below for details.
+>
+> each byte of nonce must be <= 0x7f
 
 
 
@@ -118,34 +132,32 @@ We assume the length of nonce is 16 bytes. The miner will pick nonce2 such that 
 In this example
 
 write to pool: {"id":0,"method":"mining.subscribe","params":["trbminer-v1.0.0",null]}
-recv from pool: {"id":0,"result":[null,"cebdeb6e",12],"error":null}
+recv from pool: {"id":0,"result":[null,"53252c19",12],"error":null} // subscribed
 
-write to pool:  {"id":0,"method":"mining.authorize","params":["0x810a4813068dc8571510071268d90a3d9108a298.worker1","x"]}
-recv from pool: {"id":0,"result":true,"error":null}
+write to pool: {"id":0,"method":"mining.authorize","params":["0x810a4813068dc8571510071268d90a3d9108a298.worker1","x"]}
+recv from pool: {"id":0,"result":true,"error":null} // authorized
 
-write to pool: {"id":0,"method":"mining.set_difficulty","params":["abc123"]} // job difficulty set to: 11256099
-recv from pool: {"id":null,"method":"mining.notify","params":["12020631","85666ab512fdf4232063b485ffdb74d032f5c21bcc612b22039af01c80500371","7f97009879cbbbcbd6ca0ced94644d25be4bef15","34d1369450ac1",true]} // block difficulty 929170695981761
+recv from pool: {"id":0,"method":"mining.set_difficulty","params":["123abc"]} // job difficulty set to: 1194684
+recv from pool: {"id":0,"method":"mining.notify","params":["84557030","93a16ac3eaa54c323dbeccf7c7a9a061daa4d1a3c9b4d8f7fccdffbbbc97ea64","7f97009879cbbbcbd6ca0ced94644d25be4bef15","46720b08e8d81",true]}
 
+write to pool: {"id":0,"method":"mining.submit","params":["0x810a4813068dc8571510071268d90a3d9108a298.worker1","84557030","000000000000000017582701"]} // share found: "000000000000000017582701"
+recv from pool: {"id":0,"result":true,"error":null}	// share accepted
 
-write to pool: {"id":0,"method":"mining.submit","params":["0x810a4813068dc8571510071268d90a3d9108a298.worker1","12020631","000000000000000000987421"]} // share found: "000000000000000000987421"
-recv from pool: {"id":0,"result":true,"error":null} // share accepted
+jobDiff = 0x123abc = 1194684
+blockDiff = 0x46720b08e8d81 = 1239290005589377
+compareRemainder = blockDiff / jobDiff = 1037337074
 
+nonce1 = 0x53252c19
+nonce2 = 0x000000000000000017582701
+nonce = nonce1 + nonce2 = 0x53252c19000000000000000017582701	// each byte of nonce must be <= 0x7f
 
-jobDiff = 0xabc123 = 11256099
-blockDiff = 0x34d1369450ac1 = 929170695981761
-compareRemainder = blockDiff / jobDiff = 82548198
-
-nonce1 = 0xcebdeb6e
-nonce2 = 0x000000000000000000987421
-nonce = nonce1 + nonce2 = 0xcebdeb6e000000000000000000987421
-
-challenge = 0x85666ab512fdf4232063b485ffdb74d032f5c21bcc612b22039af01c80500371
+challenge = 0x93a16ac3eaa54c323dbeccf7c7a9a061daa4d1a3c9b4d8f7fccdffbbbc97ea64
 address = 0x7f97009879cbbbcbd6ca0ced94644d25be4bef15
 
-hashInput = challenge + address + nonce = 0x85666ab512fdf4232063b485ffdb74d032f5c21bcc612b22039af01c805003717f97009879cbbbcbd6ca0ced94644d25be4bef15cebdeb6e000000000000000000987421
-powHash = hashFn(hashInput) = 0x087415fe723270647dffe38b0e49b2aff0a9af10dc5e5f472558cd53aa16c15f
+hashInput = challenge + address + nonce = 0x93a16ac3eaa54c323dbeccf7c7a9a061daa4d1a3c9b4d8f7fccdffbbbc97ea647f97009879cbbbcbd6ca0ced94644d25be4bef1553252c19000000000000000017582701
+powHash = hashFn(hashInput) = 0x759002bee9415cdd909447706444bd262971797ceeb86b396b0dce2ce64d7b18
 
-remainder = powHash mod blockDiff = 3823608844706510412362965034998918316694949240729139028435068128922200097119 mod 929170695981761 = 76978914
+remainder = powHash mod blockDiff = 53175048212017467759802978923387577021972170836971070110060363294245502417688 mod 1239290005589377 = 512689088
 
-When remainder <= compareRemainder, miner should submit the solution. Pool accepts this as a valid share.
+When remainder <= compareRemainder (512689088 <= 1037337074), miner should submit the solution. Pool accepts this as a valid share.
 ```

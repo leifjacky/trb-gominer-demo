@@ -52,12 +52,28 @@ type Job struct {
 func (j *Job) GetNextNonce(size int) string {
 	j.Lock()
 	defer j.Unlock()
-	n := FillZeroHashLen(j.nonce.Text(10), size*2)
-	j.nonce = new(big.Int).Add(j.nonce, BigOne)
-	if j.nonce.Cmp(MaxNonce) >= 0 {
-		j.nonce = new(big.Int).Sub(j.nonce, MaxNonce)
+	for {
+		j.nonce = new(big.Int).Add(j.nonce, BigOne)
+		if j.nonce.Cmp(MaxNonce) >= 0 {
+			j.nonce = new(big.Int).Sub(j.nonce, MaxNonce)
+		}
+		valid := true
+
+		/*
+			each byte in nonce must be <= 0x7f
+		*/
+		bt := j.nonce.Bytes()
+		for _, b := range bt {
+			if b>>7 == 1 {
+				valid = false
+				break
+			}
+		}
+		if valid {
+			n := FillZeroHashLen(j.nonce.Text(10), size*2)
+			return n
+		}
 	}
-	return n
 }
 
 func NewMiner(cfg *StratumMinerConfig) *StratumMiner {
